@@ -10,24 +10,32 @@ const CREDS = {
   username: USER_NAME,
   password: PASSWORD
 };
+// Not sure when sessionIDs expire, sessonStorage became unreliable
+let sessionId = "";
 
 const getSessionId = () => {
   return axios
     .post(`${URL}/user/authenticate`, CREDS)
-    .then(data =>
-      sessionStorage.setItem("sessionId", data.data.session.sessionId)
+    .then(
+      data => (sessionId = data.data.session.sessionId)
+      // sessionStorage.setItem("sessionId", data.data.session.sessionId)
     )
     .catch(handleError);
 };
 
 const API = async params => {
-  if (!sessionStorage.getItem("sessionId")) await getSessionId();
+  if (
+    !sessionId
+    // !sessionStorage.getItem("sessionId")
+  )
+    await getSessionId();
 
   return axios
     .post(`${URL}/location/locationMarkers`, {
       ...params,
       filter: " accountId IN ('77b0c1a5-6159-44a9-8268-07b393da0d4e') ",
-      sessionId: sessionStorage.getItem("sessionId")
+      sessionId
+      // sessionId: sessionStorage.getItem("sessionId")
     })
     .then(data => data.data)
     .catch(handleError);
