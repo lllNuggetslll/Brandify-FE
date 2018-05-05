@@ -73,6 +73,7 @@ class MainContainer extends Component {
             <LocationForm
               onSubmit={this.handleOnSubmit}
               initialValues={center}
+              center={center}
             />
           </FormContainer>
           <div>
