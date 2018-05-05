@@ -21,5 +21,8 @@ ButtonContainer.constants = {
   MAP,
   TABLE
 };
+ButtonContainer.proptypes = {
+  selectView: PropTypes.func.isRequired
+};
 
 export default ButtonContainer;

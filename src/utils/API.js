@@ -10,23 +10,24 @@ const CREDS = {
   username: USER_NAME,
   password: PASSWORD
 };
-let sessionId = "";
 
 const getSessionId = () => {
   return axios
     .post(`${URL}/user/authenticate`, CREDS)
-    .then(data => (sessionId = data.data.session.sessionId))
+    .then(data =>
+      sessionStorage.setItem("sessionId", data.data.session.sessionId)
+    )
     .catch(handleError);
 };
 
 const API = async params => {
-  if (!sessionId) await getSessionId();
+  if (!sessionStorage.getItem("sessionId")) await getSessionId();
 
   return axios
     .post(`${URL}/location/locationMarkers`, {
       ...params,
       filter: " accountId IN ('77b0c1a5-6159-44a9-8268-07b393da0d4e') ",
-      sessionId
+      sessionId: sessionStorage.getItem("sessionId")
     })
     .then(data => data.data)
     .catch(handleError);

@@ -1,9 +1,8 @@
 import React, { Component, Fragment } from "react";
 import PropTypes from "prop-types";
-import { compose, withState, withHandlers } from "recompose";
+import { compose, withHandlers } from "recompose";
 import { withScriptjs, withGoogleMap, GoogleMap } from "react-google-maps";
 import Markers from "./Markers";
-import styled from "styled-components";
 
 export default class MapContainer extends Component {
   state = {
@@ -27,11 +26,6 @@ export default class MapContainer extends Component {
         const refs = {
           map: null
         };
-        const getRadius = () => {
-          const { b, f } = refs.map.getBounds();
-
-          return Math.abs(b.f - b.b) + Math.abs(f.f - f.b) * 50;
-        };
 
         return {
           onMapMounted: () => ref => {
@@ -42,16 +36,13 @@ export default class MapContainer extends Component {
             const lng = refs.map.getCenter().lng();
             const distancePanned =
               Math.abs(center.lat - lat) + Math.abs(center.lng - lng);
-            const radius = getRadius();
 
-            if (distancePanned > 0.75)
-              this.handleMapChange({ lat, lng, radius });
+            if (distancePanned > 0.5) this.handleMapChange({ lat, lng });
           },
           onZoomChanged: ({ center }) => () => {
             const { lat, lng } = center;
-            const radius = getRadius();
 
-            this.handleMapChange({ lat, lng, radius });
+            this.handleMapChange({ lat, lng });
           }
         };
       }),
@@ -72,7 +63,7 @@ export default class MapContainer extends Component {
           onZoomChanged={() => onZoomChanged(center)}
           onDragEnd={() => onDragEnd(center)}
           center={center}
-          defaultZoom={13}
+          defaultZoom={10}
         >
           <Markers center={center} locations={locations} />
         </GoogleMap>
@@ -95,8 +86,9 @@ export default class MapContainer extends Component {
             containerElement={
               <div
                 style={{
-                  height: `500px`,
-                  width: "500px"
+                  height: 500,
+                  minWidth: 500,
+                  width: "100%"
                 }}
               />
             }
@@ -111,3 +103,10 @@ export default class MapContainer extends Component {
     );
   }
 }
+MapContainer.proptypes = {
+  locations: PropTypes.array.isRequired,
+  center: PropTypes.shape({
+    lat: PropTypes.number,
+    lng: PropTypes.number
+  }).isRequired
+};

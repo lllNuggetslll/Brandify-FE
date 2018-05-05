@@ -1,16 +1,30 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
+import throttle from "lodash/throttle";
+import styled from "styled-components";
+import { notification } from "antd";
 
 import TableContainer from "./tableView";
 import Map from "./mapView";
 import LocationForm from "./locationForm";
 import Buttons from "./buttons";
-import throttle from "lodash/throttle";
 
-import { getLocations, changePage } from "./../actions/actions";
+import { getLocations, changePage, hideError } from "./../actions/actions";
 
 const { MAP, TABLE } = Buttons.constants;
+
+const AppContainer = styled.div`
+  margin: 5%;
+  background-color: lightgrey;
+  padding: 20px;
+  min-height: 740px;
+  min-width: 765px;
+`;
+
+const FormContainer = styled.div`
+  margin: 20px;
+`;
 
 class MainContainer extends Component {
   state = {
@@ -19,7 +33,16 @@ class MainContainer extends Component {
 
   componentDidMount() {
     const { getLocations } = this.props;
-    getLocations({ lat: 33.8326, lng: -117.9186, radius: 5 });
+    getLocations({ lat: 33.8326, lng: -117.9186 });
+  }
+
+  componentWillReceiveProps() {
+    const { error, hideError } = this.props;
+
+    if (error) {
+      notification.open({ message: error });
+      hideError();
+    }
   }
 
   handleOnSelectView = view => {
@@ -43,14 +66,15 @@ class MainContainer extends Component {
     });
 
     return (
-      <div>
+      <AppContainer>
         <Buttons selectView={this.handleOnSelectView} />
-        <div style={{ display: "flex" }}>
-          <LocationForm
-            onSubmit={this.handleOnSubmit}
-            center={center}
-            initialValues={center}
-          />
+        <div style={{ display: "flex", flexWrap: "wrap" }}>
+          <FormContainer>
+            <LocationForm
+              onSubmit={this.handleOnSubmit}
+              initialValues={center}
+            />
+          </FormContainer>
           <div>
             {view === TABLE ? (
               <TableContainer
@@ -67,21 +91,33 @@ class MainContainer extends Component {
             )}
           </div>
         </div>
-      </div>
+      </AppContainer>
     );
   }
 }
+MainContainer.proptypes = {
+  center: PropTypes.object.isRequired,
+  locations: PropTypes.array.isRequired,
+  page: PropTypes.number.isRequired,
+  error: PropTypes.string,
+  getLocations: PropTypes.func.isRequired,
+  changePage: PropTypes.func.isRequired,
+  hideError: PropTypes.func.isRequired
+};
 
 const mapStateToProps = state => {
-  const { locations, center, page } = state.mapReducer;
+  const { locations, center, page, error } = state.mapReducer;
 
   return {
     center,
     locations,
-    page
+    page,
+    error
   };
 };
 
-export default connect(mapStateToProps, { getLocations, changePage })(
-  MainContainer
-);
+export default connect(mapStateToProps, {
+  getLocations,
+  changePage,
+  hideError
+})(MainContainer);

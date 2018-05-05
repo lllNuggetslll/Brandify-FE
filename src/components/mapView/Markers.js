@@ -4,7 +4,6 @@ import { compose, withStateHandlers } from "recompose";
 import { Marker, InfoWindow } from "react-google-maps";
 import isEqual from "lodash/isEqual";
 import brandify from "./brandify.png";
-import styled from "styled-components";
 
 const Info = ({ onToggleOpen, name, address }) => {
   return (
@@ -75,8 +74,7 @@ const Markers = ({ center, locations }) => {
       address1,
       city,
       state,
-      postalCode,
-      phoneNumbers
+      postalCode
     } = location;
     const address = `${address1}, ${city}, ${state}, ${postalCode}`;
 
@@ -97,6 +95,13 @@ const Markers = ({ center, locations }) => {
       {markers}
     </Fragment>
   );
+};
+Marker.proptypes = {
+  locations: PropTypes.array.isRequired,
+  center: PropTypes.shape({
+    lat: PropTypes.number,
+    lng: PropTypes.number
+  }).isRequired
 };
 
 export default Markers;

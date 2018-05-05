@@ -3,26 +3,28 @@ import API from "./../utils/API";
 export const GET_LOCATIONS = "GET_LOCATIONS";
 export const RECEIVE_LOCATIONS = "RECEIVE_LOCATIONS";
 export const CHANGE_PAGE = "CHANGE_PAGE";
-
-const getPage = ({ locations, page, pageNum }) => {
-  if (pageNum === 1 && locations.length === 0) return page;
-
-  return page + pageNum > 0 ? page + pageNum : 1;
-};
+export const SHOW_ERROR = "SHOW_ERROR";
+export const HIDE_ERROR = "HIDE_ERROR";
 
 export const getLocations = params => {
-  const { pageSize } = params;
+  return async (dispatch, getState) => {
+    const {
+      mapReducer: { page },
+      form: { location: { values: { lat, lng, pageSize, radius } } }
+    } = getState();
 
-  if (pageSize) {
-    params.paging = {
-      pageSize
+    const formattedParams = {
+      paging: {
+        page,
+        pageSize
+      },
+      lat,
+      lng,
+      radius,
+      ...params
     };
 
-    delete params.pageSize;
-  }
-  console.log(params);
-  return async dispatch => {
-    const payload = await API(params);
+    const payload = await API(formattedParams);
 
     dispatch(receiveLocations(payload));
   };
@@ -36,28 +38,30 @@ export const receiveLocations = payload => {
 };
 
 export const changePage = pageNum => {
-  return async (dispatch, getState) => {
-    const {
-      mapReducer: { center, page, locations },
-      form: { location: { values } }
-    } = getState();
-    const newPage = getPage({ locations, page, pageNum });
-    console.log("newpage", newPage);
-    const params = {
-      radius: 100,
-      paging: {
-        page: newPage,
-        pageSize: 10
-      },
-      ...center,
-      ...values
-    };
-
-    await dispatch(getLocations(params));
+  return (dispatch, getState) => {
+    const { mapReducer: { page } } = getState();
+    const newPage = page + pageNum > 0 ? page + pageNum : 1;
 
     dispatch({
       type: CHANGE_PAGE,
       payload: { page: newPage }
     });
+
+    dispatch(getLocations());
+  };
+};
+
+export const showError = error => {
+  return {
+    type: SHOW_ERROR,
+    payload: {
+      error
+    }
+  };
+};
+
+export const hideError = () => {
+  return {
+    type: HIDE_ERROR
   };
 };

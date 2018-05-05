@@ -1,7 +1,8 @@
-import React, { Component, Fragment } from "react";
+import React, { Fragment } from "react";
 import PropTypes from "prop-types";
 import "antd/dist/antd.css";
 import { Table, Button, Icon } from "antd";
+import styled from "styled-components";
 
 const columns = [
   {
@@ -17,6 +18,17 @@ const columns = [
     dataIndex: "phoneNumber"
   }
 ];
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin: 5px;
+`;
+
+const StyledTable = styled(Table)`
+  width: 100%;
+  min-width: 720px;
+`;
 
 const TableContainer = ({ locations, changePage, page }) => {
   const formattedData = locations.map(location => {
@@ -43,16 +55,35 @@ const TableContainer = ({ locations, changePage, page }) => {
 
   return (
     <Fragment>
-      <Table columns={columns} dataSource={formattedData} pagination={false} />
-      <Button onClick={() => changePage(-1)} type="primary">
-        <Icon type="left" />Backward
-      </Button>
-      <span>{`Page: ${page}`}</span>
-      <Button onClick={() => changePage(1)} type="primary">
-        Forward<Icon type="right" />
-      </Button>
+      <ButtonContainer>
+        <Button
+          onClick={() => changePage(-1)}
+          type="primary"
+          disabled={page === 1}
+        >
+          <Icon type="left" />Back
+        </Button>
+        <span>{`Page: ${page}`}</span>
+        <Button
+          onClick={() => changePage(1)}
+          type="primary"
+          disabled={locations.length === 0}
+        >
+          Next<Icon type="right" />
+        </Button>
+      </ButtonContainer>
+      <StyledTable
+        columns={columns}
+        dataSource={formattedData}
+        pagination={false}
+      />
     </Fragment>
   );
+};
+TableContainer.proptypes = {
+  locations: PropTypes.array.isRequired,
+  changePage: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired
 };
 
 export default TableContainer;

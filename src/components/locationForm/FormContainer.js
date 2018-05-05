@@ -2,17 +2,22 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { Input, Button } from "antd";
 import { Field, reduxForm } from "redux-form";
+import Slider from "./Slider";
 import isEqual from "lodash/isEqual";
+import styled from "styled-components";
 
 import validate from "./validate";
 
+const ButtonContainer = styled.div`
+  float: right;
+`;
 const renderField = ({
   input,
   label,
   type,
   meta: { touched, error, warning }
 }) => (
-  <div>
+  <div style={{ width: 200 }}>
     <div>
       <Input {...input} placeholder={label} type={type} />
       {touched && (error && <div style={{ marginBottom: -21 }}>{error}</div>)}
@@ -22,13 +27,13 @@ const renderField = ({
 
 class LocationForm extends Component {
   componentWillReceiveProps(nextProps) {
-    if (!isEqual(this.props.center, nextProps.center))
+    if (!isEqual(this.props.center, nextProps.center)) {
       this.props.initialize(nextProps.center);
+    }
   }
 
   render() {
-    const { handleSubmit, pristine, reset, submitting, center } = this.props;
-    const { lat, lng } = center;
+    const { handleSubmit, reset, submitting } = this.props;
 
     return (
       <form onSubmit={handleSubmit}>
@@ -55,43 +60,46 @@ class LocationForm extends Component {
           </div>
         </div>
         <div style={{ display: "flex", margin: 25 }}>
-          <label style={{ width: 100 }}>Radius</label>
+          <label style={{ width: 100, lineHeight: 4 }}>Radius</label>
           <div>
             <Field
               name="radius"
-              component={renderField}
+              component={Slider}
               placeholder="Radius"
-              type="number"
+              max={100}
+              defaultValue={50}
             />
           </div>
         </div>
         <div style={{ display: "flex", margin: 25 }}>
-          <label style={{ width: 100 }}>Limit</label>
+          <label style={{ width: 100, lineHeight: 4 }}>Limit</label>
           <div>
             <Field
               name="pageSize"
-              component={renderField}
+              component={Slider}
               placeholder="Limit"
-              type="number"
+              max={10}
+              defaultValue={10}
             />
           </div>
         </div>
-        <div>
-          <Button
-            htmlType="submit"
-            disabled={pristine || submitting}
-            loading={submitting}
-          >
+        <ButtonContainer>
+          <Button htmlType="submit" disabled={submitting} loading={submitting}>
             Submit
           </Button>
-          <Button disabled={pristine || submitting} onClick={reset}>
-            Clear Values
+          <Button disabled={submitting} onClick={reset}>
+            Reset
           </Button>
-        </div>
+        </ButtonContainer>
       </form>
     );
   }
 }
+LocationForm.proptypes = {
+  handleSubmit: PropTypes.func.isRequired,
+  reset: PropTypes.bool.isRequired,
+  submitting: PropTypes.bool.isRequired
+};
 
 export default reduxForm({
   form: "location",
